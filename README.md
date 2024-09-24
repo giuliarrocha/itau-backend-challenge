@@ -10,6 +10,8 @@ A estrutura do projeto é organizada em pacotes que seguem os princípios da Cle
 ![clean-arch.png](static/clean-arch.png)
 
 com.itau.backend.challenge.demo 
+
+```
 ├── app 
 │ ├── exceptions # Exceções personalizadas para validação 
 │ └── usecases # Casos de uso da aplicação
@@ -17,7 +19,7 @@ com.itau.backend.challenge.demo
 ├── config # Configurações da aplicação
 └── controllers # Controladores da API
   └── dtos # DTOs para requisições e respostas
-
+```
 
 ## Caso de Uso: `ValidatePasswordUseCase`
 
