@@ -1,6 +1,7 @@
 # API de Validação de Senhas
 
 Esta é uma API desenvolvida com Spring Boot Java, utilizando princípios de Clean Architecture. 
+
 O principal objetivo desta API é fornecer um caso de uso para a validação de senhas com regras específicas de segurança.
 
 ## Estrutura do Projeto
@@ -49,7 +50,7 @@ As seguintes exceções personalizadas são lançadas em caso de falha na valida
 
 ## Controlador: `PasswordController`
 
-O `PasswordController` fornece um endpoint para validar senhas:
+Fornece um endpoint para validar senhas:
 
 ### Endpoint: `POST /password/validate`
 
@@ -58,7 +59,7 @@ O `PasswordController` fornece um endpoint para validar senhas:
     - **200 OK**: Retorna um DTO `ValidatePasswordResponseDto` com o status da validação e uma mensagem.
     - **400 Bad Request**: Retorna uma mensagem de erro se a validação falhar.
 
-#### Exemplo de Requisição
+### Exemplo de Requisição
 
 POST /password/validate
 
@@ -69,7 +70,7 @@ Content-Type: application/json
 }
 ```
 
-#### Exemplo de Requisição
+### Exemplo de Resposta
 
 * Sucesso:
 
@@ -93,16 +94,63 @@ Content-Type: application/json
 
 * Clone o repositório:
 ```console
-git clone <URL_DO_REPOSITORIO>
-cd <NOME_DO_DIRETORIO>
+git clone https://github.com/giuliarrocha/itau-backend-challenge.git
 ```
 
-* Compile o projeto:
+* Execute a aplicação (necessário Maven instalado):
 ```console
-./mvnw clean install
+mvn spring-boot:run
 ```
 
-* Execute a aplicação:
-```console
-./mvnw spring-boot:run
-```
+
+## Infraestrutura AWS
+Há algumas formas nas quais essa aplicação pode ser provisionada na AWS.
+Alguns pontos como número de recursos, volume de tráfego, custos e requisitos específicos da aplicação podem impactar 
+na escolha.
+
+Abaixo elenco duas opções principais para o provisionamento desta aplicação:
+
+![aws-infra.drawio.png](static/aws-infra.drawio.png)
+
+### Opção 1: API Gateway + Lambda
+- O usuário ou aplicação cliente realiza uma requisição HTTP ao Amazon API Gateway com as credenciais de acesso 
+necessárias. O API Gateway gerencia as chamadas de requisições simultâneas, inclusive gerenciamento de tráfego, 
+suporte de CORS, controle de autorização e acesso, com fluxo controlado, monitoramento e gerenciamento de versões da API;
+- Para validação dessas credenciais pode ser necessário a introdução de outro serviço como Amazon Cognito, um servidor 
+de autenticação e de autorização para tokens e AWS credenciais de acesso OAuth 2.0;
+- A API Gateway aciona a aplicação servless lambda, executando o código de validação de senha;
+- Nesse caso, a arquitetura utilizada neste projeto permite a extração apenas da classe `ValidatePasswordUseCase`, 
+sem o acoplamento do framewwork Spring Boot.
+
+#### Vantagens
+- Lambda possui integração direta com API Gateway, sem necessidade de configuração de frameworks como Java Spring Boot 
+para receber requisições;
+- Menor custo para menor número de requisições;
+- Escalabilidade;
+- Menor número de recursos para provisionar e gerenciar.
+
+#### Desvantagens
+- Pequeno atraso nas primeiras execuções da lambda se ela não for chamada com frequência;
+- Não é ideal para aplicações que exija muitas dependências, maior tempo de execução e maior número de responsabilidades.
+
+### Opção 2 ECS Fargate + Load Balancer
+- Exige a containerização da aplicação no ECR, com utilização do framework Java Spring Boot;
+- Load Balancer é responsável por receber a requisição HTTP/HTTPs do cliente e distribuir o tráfego/carga entre as 
+instâncias Fargate localizadas em um service do ECS, onde ocorrerá a execução do endpoint;
+- A validação das credenciais do cliente ocorre dentro da própria aplicação Docker.
+
+#### Vantagens
+- Permite aplicações com maior número de dependências e com maior tempo de execução, além de permitir maior
+complexidade para aplicação  (escalabilidade horizontal);
+- Não há latência na execução visto que a aplicação está sempre rodando.
+
+#### Desvantagens
+- Maior custo para menor número de requisições;
+- Maior gerenciamento de recursos, gerenciamento de container (configuração da imagem, cpu, memória, etc);
+- Pode existir a necessidade de um serviço para escalabilidade.
+
+### Conclusão
+Como se trata de uma aplicação simples, de baixa complexidade, fácil manutenção e rápida execução, a opção 1 
+(API Gateway + Lambda) seria a melhor opção se o requisito for disponibilidade considerável, que permite os 
+pequenos atrasos que a lambda pode gerar. A opção 2 (ECS Fargate + Load Balancer) seria viável apenas caso seja 
+necessário um número massivo de requisições e alta disponibilidade, sem permissão de pequenos atrasos na resposta.
