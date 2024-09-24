@@ -97,11 +97,11 @@ Content-Type: application/json
 git clone https://github.com/giuliarrocha/itau-backend-challenge.git
 ```
 
-* Execute a aplicação (necessário Maven instalado):
+* Execute a aplicação:
 ```console
-mvn spring-boot:run
+./mvnw clean package
+./mvnw spring-boot:run
 ```
-
 
 ## Infraestrutura AWS
 Há algumas formas nas quais essa aplicação pode ser provisionada na AWS.
