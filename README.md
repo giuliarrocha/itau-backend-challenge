@@ -61,6 +61,7 @@ O `PasswordController` fornece um endpoint para validar senhas:
 #### Exemplo de Requisição
 
 POST /password/validate
+
 Content-Type: application/json
 ```json
 {
